@@ -8,5 +8,7 @@ $a=Get-Content c:\temp\cbs_clean.txt -Raw
 if (!$a.contains("Component Store Cleanup Recommended : No"))
 {
     Write-EventLog -LogName System -Source "CBS" -EntryType Warning -EventId 1337 -Message $a
+} else {
+    Write-Host "Run Dism.exe /online /Cleanup-Image /StartComponentCleanup" 
 }
-type c:\temp\cbs_clean.txt
+Get-Content c:\temp\cbs_clean.txt
