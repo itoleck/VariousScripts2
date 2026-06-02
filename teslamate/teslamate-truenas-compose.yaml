@@ -1,0 +1,87 @@
+services:
+  teslamate:
+    image: teslamate/teslamate:latest
+    restart: always
+    environment:
+      - ENCRYPTION_KEY=<PASSWORD>
+      - DATABASE_USER=<USER>
+      - DATABASE_PASS=<PASSWORD>
+      - DATABASE_NAME=<DBNAME>
+      - DATABASE_HOST=<IPADDRESS>
+      - DATABASE_PORT=5432
+      - MQTT_HOST=<IPADDRESS>
+      - MQTT_PORT=1883
+    ports:
+      - 4000:4000
+    volumes:
+      - bind:
+          create_host_path: False
+          propagation: rprivate
+        read_only: False
+        source: /mnt/<ZFSPOOL>/containers/teslamate/import
+        target: /opt/app/import
+        type: bind
+    cap_drop:
+      - all
+
+  database:
+    image: postgres:18-trixie
+    restart: always
+    environment:
+      - POSTGRES_USER=<USER>
+      - POSTGRES_PASSWORD=<PASSWORD>
+      - POSTGRES_DB=<DBNAME>
+    ports:
+      - 5432:5432
+    volumes:
+      - bind:
+          create_host_path: False
+          propagation: rprivate
+        read_only: False
+        source: /mnt/<ZFSPOOL>/containers/teslamate/var/lib/postgresql
+        target: /var/lib/postgresql
+        type: bind
+
+  grafana:
+    image: teslamate/grafana:latest
+    restart: always
+    environment:
+      - DATABASE_USER=<USER>
+      - DATABASE_PASS=<PASSWORD>
+      - DATABASE_NAME=<DBNAME>
+      - DATABASE_HOST=<IPADDRESS>
+      - DATABASE_PORT=5432
+    ports:
+      - 3000:3000
+    volumes:
+      - bind:
+          create_host_path: False
+          propagation: rprivate
+        read_only: False
+        source: /mnt/<ZFSPOOL>/containers/teslamate/var/lib/grafana
+        target: /var/lib/grafana
+        type: bind
+
+  mosquitto:
+    image: eclipse-mosquitto:2
+    restart: always
+    command: mosquitto -c /mosquitto-no-auth.conf
+    ports:
+      - 1883:1883
+    volumes:
+      - bind:
+          create_host_path: False
+          propagation: rprivate
+        read_only: False
+        source: /mnt/<ZFSPOOL>/containers/mosquitto/config
+        target: /mosquitto/config
+        type: bind
+      - bind:
+          create_host_path: False
+          propagation: rprivate
+        read_only: False
+        source: /mnt/<ZFSPOOL>/containers/mosquitto/data
+        target: /mosquitto/data
+        type: bind
+volumes: {}
+x-action-required: False
